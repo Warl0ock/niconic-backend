@@ -21,9 +21,9 @@ app.use(express.json());
 // 2. KONFIGURASI DATABASE
 const pool = mysql.createPool({
   host: 'localhost',
-  user: 'root', // Username MySQL Anda
-  password: 'wfvZcYRG2LVD33M', // Password MySQL Anda
-  database: 'niconic_portfolio', // Database MySQL Anda
+  user: 'user', // Username MySQL Anda
+  password: 'password', // Password MySQL Anda
+  database: 'database', // Database MySQL Anda
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
