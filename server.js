@@ -73,27 +73,42 @@ app.get(['/api/projects', '/projects'], async (req, res) => {
 });
 
 // --- Endpoint: Tambah Proyek Baru ---
-// Update di app.post untuk simpan data baru
+// Update Endpoint POST Projects
 app.post(['/api/projects', '/projects'], async (req, res) => {
   try {
-    const { title, category, tags, spanClasses, image, description, challenge } = req.body;
+    const { title, category, tags, spanClasses, image, gallery, description, challenge } = req.body;
+    
+    // Simpan gallery sebagai JSON string
+    const galleryJson = JSON.stringify(gallery || []);
     const tagsJson = JSON.stringify(tags || []);
     
-    const query = 'INSERT INTO projects (title, category, tags, spanClasses, image, description, challenge) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    const values = [title, category, tagsJson, spanClasses, image, description, challenge];
+    const query = 'INSERT INTO projects (title, category, tags, spanClasses, image, gallery, description, challenge) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    const values = [title, category, tagsJson, spanClasses, image, galleryJson, description, challenge];
     
-    const [result] = await pool.query(query, values);
-    res.status(201).json({ message: 'Proyek berhasil!', id: result.insertId });
+    await pool.query(query, values);
+    res.status(201).json({ message: 'Proyek berhasil disimpan!' });
   } catch (error) {
-    res.status(500).json({ message: 'Gagal menambah proyek' });
+    res.status(500).json({ message: 'Gagal simpan ke database' });
   }
 });
 
-// --- Endpoint: Upload File ---
-app.post(['/api/upload', '/upload'], upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: 'Tidak ada file' });
-  const imageUrl = `/api/uploads/${req.file.filename}`;
-  res.json({ imageUrl: imageUrl });
+// Endpoint Upload: Mendukung single (thumbnail) dan multiple (gallery) sekaligus
+app.post(['/api/upload', '/upload'], upload.fields([
+  { name: 'thumbnail', maxCount: 1 },
+  { name: 'gallery', maxCount: 10 }
+]), (req, res) => {
+  const files = req.files;
+  let response = {};
+
+  if (files['thumbnail']) {
+    response.thumbnailUrl = `/api/uploads/${files['thumbnail'][0].filename}`;
+  }
+  
+  if (files['gallery']) {
+    response.galleryUrls = files['gallery'].map(file => `/api/uploads/${file.filename}`);
+  }
+
+  res.json(response);
 });
 
 // --- Endpoint: Ambil Satu Proyek ---
