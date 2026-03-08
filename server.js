@@ -73,15 +73,18 @@ app.get(['/api/projects', '/projects'], async (req, res) => {
 });
 
 // --- Endpoint: Tambah Proyek Baru ---
+// Update di app.post untuk simpan data baru
 app.post(['/api/projects', '/projects'], async (req, res) => {
   try {
-    const { title, category, tags, spanClasses, image } = req.body;
+    const { title, category, tags, spanClasses, image, description, challenge } = req.body;
     const tagsJson = JSON.stringify(tags || []);
-    const query = 'INSERT INTO projects (title, category, tags, spanClasses, image) VALUES (?, ?, ?, ?, ?)';
-    const [result] = await pool.query(query, [title, category, tagsJson, spanClasses, image]);
-    res.status(201).json({ message: 'Proyek berhasil ditambahkan!', id: result.insertId });
+    
+    const query = 'INSERT INTO projects (title, category, tags, spanClasses, image, description, challenge) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const values = [title, category, tagsJson, spanClasses, image, description, challenge];
+    
+    const [result] = await pool.query(query, values);
+    res.status(201).json({ message: 'Proyek berhasil!', id: result.insertId });
   } catch (error) {
-    console.error('Error insert:', error);
     res.status(500).json({ message: 'Gagal menambah proyek' });
   }
 });
