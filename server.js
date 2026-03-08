@@ -62,19 +62,20 @@ app.get('/', (req, res) => {
   res.send('niconic.dev API is running with MySQL & Upload Support!');
 });
 
-// Endpoint: Ambil semua proyek
-app.get('/api/projects', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM projects ORDER BY id DESC');
-    const formattedProjects = rows.map(project => ({
-      ...project,
-      tags: typeof project.tags === 'string' ? JSON.parse(project.tags) : project.tags
-    }));
-    res.json(formattedProjects);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Terjadi kesalahan pada server' });
-  }
+// --- Endpoint: Ambil SEMUA proyek ---
+// Gunakan array rute agar support proxy Nginx yang memotong path
+app.get(['/api/projects', '/projects'], async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM projects ORDER BY id DESC');
+    const formattedProjects = rows.map(project => ({
+      ...project,
+      tags: typeof project.tags === 'string' ? JSON.parse(project.tags) : project.tags
+    }));
+    res.json(formattedProjects);
+  } catch (error) {
+    console.error('Error Fetch All:', error);
+    res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+  }
 });
 
 // Endpoint: Tambah proyek baru
@@ -113,20 +114,20 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   res.json({ imageUrl: imageUrl });
 });
 
-// Endpoint: Ambil satu proyek
-app.get('/api/projects/:id', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM projects WHERE id = ?', [req.params.id]);
-    if (rows.length > 0) {
-      const project = rows[0];
-      project.tags = typeof project.tags === 'string' ? JSON.parse(project.tags) : project.tags;
-      res.json(project);
-    } else {
-      res.status(404).json({ message: 'Proyek tidak ditemukan' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
+// --- Endpoint: Ambil SATU proyek berdasarkan ID ---
+app.get(['/api/projects/:id', '/projects/:id'], async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM projects WHERE id = ?', [req.params.id]);
+    if (rows.length > 0) {
+      const project = rows[0];
+      project.tags = typeof project.tags === 'string' ? JSON.parse(project.tags) : project.tags;
+      res.json(project);
+    } else {
+      res.status(404).json({ message: 'Proyek tidak ditemukan' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 // Jalankan server
