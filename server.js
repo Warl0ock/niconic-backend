@@ -113,6 +113,23 @@ app.get('/', (req, res) => {
   res.send('niconic.dev API is running with MySQL & Upload Support!');
 });
 
+// --- Endpoint: Hapus Proyek ---
+app.delete(['/api/projects/:id', '/projects/:id'], async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await pool.query('DELETE FROM projects WHERE id = ?', [id]);
+    
+    if (result.affectedRows > 0) {
+      res.json({ success: true, message: 'Proyek berhasil dihapus!' });
+    } else {
+      res.status(404).json({ success: false, message: 'Proyek tidak ditemukan' });
+    }
+  } catch (error) {
+    console.error('Error delete:', error);
+    res.status(500).json({ message: 'Gagal menghapus proyek' });
+  }
+});
+
 // Jalankan server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
