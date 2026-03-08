@@ -5,6 +5,19 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Tambahkan di bagian atas server.js
+const ADMIN_PASSWORD = 'Admin123'; // Ganti dengan password pilihan Anda
+
+// Endpoint Login
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_PASSWORD) {
+    res.json({ success: true, token: 'niconic-auth-token-2026' });
+  } else {
+    res.status(401).json({ success: false, message: 'Password salah!' });
+  }
+});
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
